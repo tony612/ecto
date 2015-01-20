@@ -2,7 +2,7 @@ defmodule Ecto.Mixfile do
   use Mix.Project
 
   @version "0.7.2"
-  @adapters [:pg]
+  @adapters [:pg, :mysql]
 
   def project do
     [app: :ecto,
@@ -33,6 +33,7 @@ defmodule Ecto.Mixfile do
   defp deps do
     [{:poolboy, "~> 1.4.1"},
      {:decimal, "~> 1.0"},
+     {:mariaex, github: "liveforeverx/mariaex", optional: true},
      {:postgrex, "~> 0.7", optional: true},
      {:ex_doc, "~> 0.7", only: :docs},
      {:earmark, "~> 0.1", only: :docs},
