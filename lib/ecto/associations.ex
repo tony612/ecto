@@ -208,10 +208,11 @@ defmodule Ecto.Associations.Has do
     * `assoc` - The model that is associated
     * `owner_key` - The key on the `owner` model used for the association
     * `assoc_key` - The key on the `associated` model used for the association
+    * `source` - The custom source for the association
   """
 
   @behaviour Ecto.Associations
-  defstruct [:cardinality, :field, :owner, :assoc, :owner_key, :assoc_key]
+  defstruct [:cardinality, :field, :owner, :assoc, :owner_key, :assoc_key, :source]
 
   @doc false
   def struct(module, name, opts) do
@@ -248,7 +249,8 @@ defmodule Ecto.Associations.Has do
       owner: module,
       assoc: assoc,
       owner_key: ref,
-      assoc_key: opts[:foreign_key] || Ecto.Associations.association_key(module, ref)
+      assoc_key: opts[:foreign_key] || Ecto.Associations.association_key(module, ref),
+      source: opts[:source]
     }
   end
 
@@ -259,14 +261,16 @@ defmodule Ecto.Associations.Has do
 
   @doc false
   def joins_query(refl) do
+    assoc = Map.get(refl, :source) || refl.assoc
     from o in refl.owner,
-      join: q in ^refl.assoc,
+      join: q in ^assoc,
       on: field(q, ^refl.assoc_key) == field(o, ^refl.owner_key)
   end
 
   @doc false
   def assoc_query(refl, values) do
-    from x in refl.assoc,
+    assoc = Map.get(refl, :source) || refl.assoc
+    from x in assoc,
       where: field(x, ^refl.assoc_key) in ^values
   end
 

@@ -46,6 +46,8 @@ defmodule Ecto.AssociationsTest do
       has_many :posts, Post
       has_many :posts_comments, through: [:posts, :comments]    # many -> many
       has_many :posts_permalinks, through: [:posts, :permalink] # many -> one
+      has_many :emails, Email, source: "users_emails"
+      has_one :profile, Profile, source: "users_profiles"
     end
   end
 
@@ -56,6 +58,21 @@ defmodule Ecto.AssociationsTest do
       has_one :post, Post
       has_one :post_author, through: [:post, :author]        # one -> belongs
       has_many :post_comments, through: [:post, :comments]   # one -> many
+      has_one :summary_post, Post, source: "summary_post"
+    end
+  end
+
+  defmodule Email do
+    use Ecto.Model
+
+    schema "emails" do
+    end
+  end
+
+  defmodule Profile do
+    use Ecto.Model
+
+    schema "profiles" do
     end
   end
 
@@ -164,6 +181,32 @@ defmodule Ecto.AssociationsTest do
     assert inspect(Ecto.Associations.HasThrough.assoc_query(assoc, [1,2,3])) ==
            inspect(from a in Author, join: p in Post, on: a.id == p.author_id,
                         where: p.summary_id in ^[1, 2, 3], distinct: a, select: a)
+  end
+
+  test "has many from specified source" do
+    assoc = Author.__schema__(:association, :emails)
+
+    assert inspect(Ecto.Associations.Has.joins_query(assoc)) ==
+           inspect(from a in Author, join: e in "users_emails", on: e.author_id == a.id)
+
+    assert inspect(Ecto.Associations.Has.assoc_query(assoc, [])) ==
+           inspect(from e in "users_emails", where: e.author_id in ^[])
+
+    assert inspect(Ecto.Associations.Has.assoc_query(assoc, [1, 2, 3])) ==
+           inspect(from e in "users_emails", where: e.author_id in ^[1, 2, 3])
+  end
+
+  test "has one from specified source" do
+    assoc = Author.__schema__(:association, :profile)
+
+    assert inspect(Ecto.Associations.Has.joins_query(assoc)) ==
+           inspect(from a in Author, join: p in "users_profiles", on: p.author_id == a.id)
+
+    assert inspect(Ecto.Associations.Has.assoc_query(assoc, [])) ==
+           inspect(from p in "users_profiles", where: p.author_id in ^[])
+
+    assert inspect(Ecto.Associations.Has.assoc_query(assoc, [1, 2, 3])) ==
+           inspect(from p in "users_profiles", where: p.author_id in ^[1, 2, 3])
   end
 
   ## Integration tests through Ecto.Model

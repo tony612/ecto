@@ -149,6 +149,8 @@ defmodule Ecto.SchemaTest do
       belongs_to :comment, Comment
       has_many :comment_authors, through: [:comment, :authors]
       has_one :comment_main_author, through: [:comment, :main_author]
+      has_many :emails, Email, source: "users_emails"
+      has_one :profile, Profile, source: "users_profiles"
     end
   end
 
@@ -165,6 +167,12 @@ defmodule Ecto.SchemaTest do
     posts = (%AssocModel{}).posts
     assert %Ecto.Associations.NotLoaded{} = posts
     assert inspect(posts) == "#Ecto.Associations.NotLoaded<association :posts is not loaded>"
+  end
+
+  test "has_many association from source" do
+    assert AssocModel.__schema__(:association, :emails) ==
+           %Ecto.Associations.Has{field: :emails, owner: AssocModel, cardinality: :many,
+                                  assoc: Email, owner_key: :id, assoc_key: :assoc_model_id, source: "users_emails"}
   end
 
   test "has_many through association" do
@@ -185,6 +193,12 @@ defmodule Ecto.SchemaTest do
     author = (%AssocModel{}).author
     assert %Ecto.Associations.NotLoaded{} = author
     assert inspect(author) == "#Ecto.Associations.NotLoaded<association :author is not loaded>"
+  end
+
+  test "has_many association from source" do
+    assert AssocModel.__schema__(:association, :profile) ==
+           %Ecto.Associations.Has{field: :profile, owner: AssocModel, cardinality: :one,
+                                  assoc: Profile, owner_key: :id, assoc_key: :assoc_model_id, source: "users_profiles"}
   end
 
   test "has_one through association" do
