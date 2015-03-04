@@ -326,6 +326,8 @@ defmodule Ecto.Schema do
     * `:references` - Sets the key on the current model to be used for the
       association, defaults to the primary key on the model
 
+    * `:source` - Sets the source used for query on the asssociation
+
     * `:through` - If this association must be defined in terms of existing
       associations. Read below for more information
 
@@ -443,6 +445,8 @@ defmodule Ecto.Schema do
 
     * `:through` - If this association must be defined in terms of existing
       associations. Read the section in `has_many/3` for more information
+
+    * `:source` - Sets the source used for query on the asssociation
 
   ## Examples
 
