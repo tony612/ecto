@@ -18,38 +18,10 @@ defmodule Ecto.Adapters.Connection do
   @callback connect(Keyword.t) :: {:ok, pid} | {:error, term}
 
   @doc """
-  Executes the connect in the given module, ensuring the repository's
-  `after_connect/1` is invoked in the process.
+  Executes the connect in the given module
   """
   def connect(module, opts) do
-    case module.connect(opts) do
-      {:ok, conn} ->
-        after_connect(conn, opts)
-      {:error, _} = error ->
-        error
-    end
-  end
-
-  defp after_connect(conn, opts) do
-    repo = opts[:repo]
-    if function_exported?(repo, :after_connect, 1) do
-      try do
-        Task.async(fn -> repo.after_connect(conn) end)
-        |> Task.await(opts[:timeout])
-      catch
-        :exit, {:timeout, [Task, :await, [%Task{pid: task_pid}, _]]} ->
-          shutdown(task_pid, :brutal_kill)
-          shutdown(conn, :brutal_kill)
-          {:error, :timeout}
-        :exit, {reason, {Task, :await, _}} ->
-          shutdown(conn, :brutal_kill)
-          {:error, reason}
-      else
-        _ -> {:ok, conn}
-      end
-    else
-      {:ok, conn}
-    end
+    module.connect(opts)
   end
 
   @doc """

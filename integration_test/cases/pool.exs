@@ -17,10 +17,6 @@ defmodule Ecto.Integration.PoolTest do
 
   defmodule MockRepo do
     use Ecto.Repo, otp_app: :ecto
-
-    def after_connect(conn) do
-      send Application.get_env(:ecto, :pool_test_pid), {:after_connect, conn}
-    end
   end
 
   defmodule MockPool do
@@ -35,11 +31,6 @@ defmodule Ecto.Integration.PoolTest do
   setup do
     Application.put_env(:ecto, :pool_test_pid, self())
     :ok
-  end
-
-  test "starts repo with after_connect" do
-    assert {:ok, _} = MockRepo.start_link(lazy: false, name: MockRepo.AfterConnect, query_cache_owner: false)
-    assert_receive {:after_connect, pid} when is_pid(pid)
   end
 
   test "starts repo with different names" do
